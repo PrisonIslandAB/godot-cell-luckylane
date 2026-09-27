@@ -1,0 +1,41 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://cells/luckylane/scripts/die.gd" id="1_die"]
+[ext_resource type="Texture2D" path="res://cells/luckylane/resources/images/ui/die_frame.png" id="2_frame"]
+[ext_resource type="AudioStream" path="res://cells/luckylane/resources/audio/reel_stop.wav" id="3_stop"]
+[ext_resource type="AudioStream" path="res://cells/luckylane/resources/audio/reel_tick.wav" id="4_tick"]
+
+[node name="Die" type="Control" unique_id=4100000001]
+layout_mode = 0
+clip_contents = false
+script = ExtResource("1_die")
+
+[node name="Face" type="TextureRect" parent="."]
+layout_mode = 1
+anchor_left = 0.1406
+anchor_top = 0.1375
+anchor_right = 0.8594
+anchor_bottom = 0.84375
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="FrameOverlay" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_frame")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="LandPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("3_stop")
+
+[node name="TickPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("4_tick")
