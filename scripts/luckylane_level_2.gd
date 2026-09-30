@@ -28,6 +28,14 @@ extends Control
 ##       to advance past a finished minigame's result screen). Only acted
 ##       on while waiting between minigames; ignored otherwise.
 ##
+##   "LUCKYLANE_SKIP_PRESSED"
+##       data: {}
+##       Sent on the press edge of the red Hint button (sensor_id 2 - see
+##       luckylane_level2.py's SENSOR_ID_SKIP), repurposed here to bail out
+##       of whichever minigame is currently showing (intro, playing, or
+##       already waiting to continue) and jump straight to the next one,
+##       skipping its result screen entirely.
+##
 ## Each minigame is its own scene/script (see roll6_minigame.gd,
 ## fill_tube_minigame.gd) implementing a small duck-typed contract:
 ##   const GAME_NAME: String
@@ -40,11 +48,13 @@ extends Control
 ##   func handle_lane_pressed(lane: int) -> void
 ##   func handle_lane_released(lane: int) -> void
 ##   func stop() -> void
+##   func begin_play() -> void  ## optional - see _start_round()
 
 const MINIGAME_SCENES := [
 	preload("res://cells/luckylane/scenes/roll6_minigame.tscn"),
 	preload("res://cells/luckylane/scenes/fill_tube_minigame.tscn"),
 	preload("res://cells/luckylane/scenes/align_picture_minigame.tscn"),
+	preload("res://cells/luckylane/scenes/stop_the_clock_minigame.tscn"),
 ]
 
 const INTRO_SECONDS := 3.0
@@ -145,6 +155,12 @@ func _start_round() -> void:
 	round_timer_node.visible = true
 	time_remaining = current_minigame.ROUND_SECONDS
 	_update_timer_display()
+	## Optional - most minigames only ever react to button presses (which
+	## the sequencer already gates to PLAYING state), but a couple animate
+	## on their own (Stop the Clock's ticking hand) and need to know
+	## exactly when play begins rather than starting during the intro.
+	if current_minigame.has_method("begin_play"):
+		current_minigame.begin_play()
 
 
 func _process(delta: float) -> void:
@@ -176,6 +192,8 @@ func _on_game_specific_message_received(message: String, data: Variant) -> void:
 			_on_lane_button(int(data.lane), bool(data.pressed))
 		"LUCKYLANE_CONTINUE_PRESSED":
 			_on_continue_pressed()
+		"LUCKYLANE_SKIP_PRESSED":
+			_on_skip_pressed()
 
 
 func _on_lane_button(lane: int, pressed: bool) -> void:
@@ -190,6 +208,15 @@ func _on_lane_button(lane: int, pressed: bool) -> void:
 func _on_continue_pressed() -> void:
 	if state != State.WAIT_CONTINUE:
 		return
+	_start_next_minigame()
+
+
+## Bails out of the current minigame from any state (intro, playing, or
+## already waiting to continue) straight into the next one - stop() is
+## already safe to call regardless of state (every minigame's stop() just
+## halts its own interactivity, matching how _end_round() also calls it).
+func _on_skip_pressed() -> void:
+	current_minigame.stop()
 	_start_next_minigame()
 
 
