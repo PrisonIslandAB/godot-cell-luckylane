@@ -12,7 +12,10 @@ extends Control
 ## one-shot flourish each time (ding/particles/line flash), and it stays
 ## live after that: continuing to hold risks overshooting past FAIL_MARGIN
 ## and bursting the whole round (burst) - the player has to release in
-## time, not just eventually reach the line.
+## time, not just eventually reach the line. OkZone visualizes that whole
+## forgiving span (target line up to the burst threshold) as a translucent
+## band, not just the line itself, so "release somewhere in here" is
+## something the player can actually see rather than infer.
 ##
 ## The fill and target line are inset to the frame's actual glass window
 ## (see _update_glass_bounds) rather than spanning the tube's full width -
@@ -22,12 +25,13 @@ extends Control
 signal burst()
 
 const FILL_RATE := 1.0 / 3.5  ## fraction per second while held: empty -> full in 3.5s
-const DRAIN_RATE := 0.04  ## fraction per second, always - full -> empty in 25s if left untouched
+const DRAIN_RATE := 0.015  ## fraction per second, always - full -> empty in ~67s if left untouched
 
 ## How far past the target line the fill can go (while still being held)
 ## before it bursts - the player's reaction window after target_reached
-## fires. At FILL_RATE above, 0.03 is about a 0.1s window.
-const FAIL_MARGIN := 0.03
+## fires. At FILL_RATE above, 0.1 is about a 0.35s window - this whole span
+## is the "OK zone" visualized by OkZone (see reset()).
+const FAIL_MARGIN := 0.1
 
 ## Measured from tube_frame.png (256px wide) at the straight-rail rows,
 ## consistent throughout: the glass window spans x=58-197, sitting inside
@@ -61,6 +65,7 @@ const FILL_BOTTOM_CAP := 84.0
 
 @onready var fill_mask: Control = $FillMask
 @onready var fill_rect: ColorRect = $FillMask/FillRect
+@onready var ok_zone: ColorRect = $FillMask/OkZone
 @onready var target_line: ColorRect = $FillMask/TargetLine
 @onready var reach_particles: CPUParticles2D = $ReachParticles
 @onready var ding_player: AudioStreamPlayer = $DingPlayer
@@ -107,6 +112,13 @@ func reset(new_target_fraction: float) -> void:
 	target_line.modulate = Color(1, 1, 1, 1)
 	target_line.anchor_top = 1.0 - target_fraction
 	target_line.anchor_bottom = 1.0 - target_fraction
+	## OkZone visualizes the whole forgiving span from the target line up to
+	## the burst threshold (target_fraction + FAIL_MARGIN), not just the
+	## line itself - anchors run top-to-bottom in screen space, which is
+	## high-fraction-to-low-fraction, so the zone's top edge is the burst
+	## threshold and its bottom edge is the target line.
+	ok_zone.anchor_top = 1.0 - (target_fraction + FAIL_MARGIN)
+	ok_zone.anchor_bottom = 1.0 - target_fraction
 	_update_fill_visual()
 
 

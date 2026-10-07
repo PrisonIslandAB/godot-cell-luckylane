@@ -29,8 +29,8 @@ const ReelScene := preload("res://cells/luckylane/scenes/reel.tscn")
 ## Difficulty ramp: starts slow so the first column is easy to time, and
 ## speeds up every time a reel locks so the remaining ones get harder to
 ## call. Purely visual - doesn't touch which symbol anything lands on.
-const BASE_SPIN_SPEED := 700.0
-const SPIN_SPEED_STEP := 350.0  # added per locked reel
+const BASE_SPIN_SPEED := 550.0
+const SPIN_SPEED_STEP := 275.0  # added per locked reel
 
 ## reel_index -> {position: Vector2 (top-left, px), size: float (square side, px)}
 ## Both orientations are currently a single horizontal row of 4 (matching
@@ -95,6 +95,8 @@ const REEL_LAYOUT := {
 @onready var payout_label: Label = $ResultBanner/PayoutLabel
 @onready var win_particles: CPUParticles2D = $ResultBanner/WinParticles
 @onready var bet_label: Label = $BetButton/BetLabel
+@onready var bet_prompt_frame: Panel = $BetPromptFrame
+@onready var bet_prompt_label: Label = $BetPromptFrame/BetPromptLabel
 @onready var bet_button_player: AudioStreamPlayer = $BetButtonPlayer
 @onready var lever_pull_player: AudioStreamPlayer = $LeverPullPlayer
 @onready var chip_in_player: AudioStreamPlayer = $ChipInPlayer
@@ -230,9 +232,14 @@ func _pulse_bet_label() -> void:
 	bet_pulse_tween.tween_property(bet_label, "modulate", Color(1, 1, 1, 1), 0.2)
 
 
-## data: { "options": [int, int, int, int] }
+## data: { "options": [int, int, int, int], "option_percents": [int, int,
+##          int, int], "prompt": String }
 ## Hint button opened the picker - swap each reel's square from symbols to
-## its option amount (left to right, matching the Column buttons).
+## its option's percentage (left to right, matching the Column buttons).
+## "prompt" is shown above the reels while the picker is open; it comes
+## from python (luckylane_level3.py's PO file) rather than being
+## hardcoded here so it goes through the same translation pipeline as
+## every other on-screen string.
 func _show_bet_options(data: Dictionary) -> void:
 	result_banner.visible = false
 	bet_button_player.play()
@@ -240,10 +247,14 @@ func _show_bet_options(data: Dictionary) -> void:
 		all_in_overlay.visible = false
 		_poof_transition()
 	var options: Array = data.options
+	var percents: Array = data.get("option_percents", [])
 	current_bet_options = options
 	for i in range(reels.size()):
 		if i < options.size():
-			reels[i].show_amount(options[i])
+			var label_text := ("%d%%" % percents[i]) if i < percents.size() else str(options[i])
+			reels[i].show_amount(label_text)
+	bet_prompt_label.text = str(data.get("prompt", ""))
+	bet_prompt_frame.visible = true
 
 
 ## data: { "reel_index": 0-3 or null }
@@ -251,6 +262,7 @@ func _show_bet_options(data: Dictionary) -> void:
 ## every square just reverts. Otherwise only the picked reel gets the
 ## confirm flourish; the rest revert immediately.
 func _hide_bet_options(data: Dictionary) -> void:
+	bet_prompt_frame.visible = false
 	var chosen_index = data.get("reel_index")
 	var is_all_in := false
 	if chosen_index != null:

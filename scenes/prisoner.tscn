@@ -1,0 +1,22 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://cells/luckylane/scripts/prisoner.gd" id="1_prisoner"]
+[ext_resource type="AudioStream" path="res://cells/luckylane/resources/audio/chip_in.wav" id="2_ding"]
+[ext_resource type="AudioStream" path="res://cells/luckylane/resources/audio/reel_stop.wav" id="3_thud"]
+
+[node name="Prisoner" type="Control" unique_id=8100000001]
+layout_mode = 0
+clip_contents = false
+script = ExtResource("1_prisoner")
+
+[node name="Sprite" type="TextureRect" parent="."]
+layout_mode = 0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="DingPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2_ding")
+
+[node name="ThudPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("3_thud")

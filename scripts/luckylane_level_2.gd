@@ -49,12 +49,14 @@ extends Control
 ##   func handle_lane_released(lane: int) -> void
 ##   func stop() -> void
 ##   func begin_play() -> void  ## optional - see _start_round()
+##   const SHOW_LANE_DIVIDERS: bool  ## optional, defaults true - see _start_next_minigame()
 
 const MINIGAME_SCENES := [
 	preload("res://cells/luckylane/scenes/roll6_minigame.tscn"),
 	preload("res://cells/luckylane/scenes/fill_tube_minigame.tscn"),
 	preload("res://cells/luckylane/scenes/align_picture_minigame.tscn"),
 	preload("res://cells/luckylane/scenes/stop_the_clock_minigame.tscn"),
+	preload("res://cells/luckylane/scenes/jump_rope_minigame.tscn"),
 ]
 
 const INTRO_SECONDS := 3.0
@@ -83,6 +85,9 @@ const TIMER_FILL_RIGHT := 0.9703
 enum State { INTRO, PLAYING, WAIT_CONTINUE }
 
 @onready var background: TextureRect = $Background
+@onready var divider_1: ColorRect = $Divider1
+@onready var divider_2: ColorRect = $Divider2
+@onready var divider_3: ColorRect = $Divider3
 @onready var content_layer: Control = $ContentLayer
 @onready var round_timer_node: Control = $RoundTimer
 @onready var timer_fill: ColorRect = $RoundTimer/TimerFill
@@ -131,6 +136,18 @@ func _start_next_minigame() -> void:
 
 	var layout: Dictionary = LANE_LAYOUT.get(GameData.screen_orientation, LANE_LAYOUT["landscape"])
 	current_minigame.setup_lanes(layout.lane_centers_x, layout.lane_center_y)
+
+	## Optional - most minigames place one element per lane, so the dividers
+	## help read them as separate columns; a couple (Jump Rope) ignore
+	## centers_x entirely and cluster everything in the middle, where the
+	## dividers would just be misleading lines across the art.
+	var show_dividers := true
+	var minigame_constants: Dictionary = current_minigame.get_script().get_script_constant_map()
+	if minigame_constants.has("SHOW_LANE_DIVIDERS"):
+		show_dividers = minigame_constants["SHOW_LANE_DIVIDERS"]
+	divider_1.visible = show_dividers
+	divider_2.visible = show_dividers
+	divider_3.visible = show_dividers
 
 	_start_intro()
 

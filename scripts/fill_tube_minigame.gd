@@ -35,10 +35,10 @@ const BACKGROUND_PATH := {
 }
 
 ## Each lane's target line is randomized to a fraction in this range - kept
-## under 1.0 - FAIL_MARGIN so there's always headroom to burst into rather
-## than a target sitting right at the tube's physical top.
+## under 1.0 - FAIL_MARGIN (tube.gd) so there's always headroom to burst into
+## rather than a target sitting right at the tube's physical top.
 const TARGET_FRACTION_MIN := 0.4
-const TARGET_FRACTION_MAX := 0.85
+const TARGET_FRACTION_MAX := 0.8
 
 const TubeScene := preload("res://cells/luckylane/scenes/tube.tscn")
 

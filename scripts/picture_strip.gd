@@ -15,6 +15,12 @@ extends Control
 ## live every frame by the minigame, so scrolling away from alignment and
 ## back again is always fine, nothing ever "busts".
 ##
+## Crossing into alignment plays a one-shot golden flourish (AlignedBorder
+## flash + AlignParticles burst, same idiom as tube.gd's
+## _celebrate_line_reached() for its target line) so a player can feel which
+## lane just landed - it's a momentary celebration, not a static indicator
+## that sits on screen for as long as the lane happens to still be aligned.
+##
 ## The four lanes' textures are quarters of one shared picture
 ## (picture_puzzle_*.png - see align_picture_minigame.gd's header), sliced
 ## via AtlasTexture rather than asking for 4 separate files, so seams line
@@ -34,6 +40,8 @@ const SCROLL_SPEED := 220.0  ## px/sec while held
 const ALIGN_TOLERANCE_FRACTION := 0.03
 
 @onready var strip: Control = $Mask/Strip
+@onready var aligned_border: Panel = $AlignedBorder
+@onready var align_particles: CPUParticles2D = $AlignParticles
 @onready var ding_player: AudioStreamPlayer = $DingPlayer
 
 var loop_height := 1.0
@@ -150,3 +158,10 @@ func _apply_scroll() -> void:
 
 func _celebrate_aligned() -> void:
 	ding_player.play()
+	align_particles.position = size / 2.0
+	align_particles.restart()
+	align_particles.emitting = true
+
+	var pulse := create_tween()
+	pulse.tween_property(aligned_border, "modulate", Color(1.6, 1.4, 0.6, 1), 0.1)
+	pulse.tween_property(aligned_border, "modulate", Color(1, 1, 1, 0), 0.3)

@@ -75,12 +75,14 @@ func set_volume(linear_volume: float) -> void:
 
 
 ## Swaps this reel's square from the spinning symbol strip to a plain
-## number - used for LUCKYLANE_SHOW_BET_OPTIONS, where the four reel
+## label - used for LUCKYLANE_SHOW_BET_OPTIONS, where the four reel
 ## windows temporarily double as the bet-picker's option display. The
-## ornate frame is hidden too so the numbers aren't visually competing
-## with it - easier to read what you're about to press.
-func show_amount(amount: int) -> void:
-	amount_label.text = str(amount)
+## ornate frame is hidden too so the text isn't visually competing with
+## it - easier to read what you're about to press. Takes the already-
+## formatted display text (e.g. "25%") rather than a raw number, since
+## the level script is the one that knows how python wants it shown.
+func show_amount(text: String) -> void:
+	amount_label.text = text
 	amount_label.visible = true
 	amount_label.scale = Vector2(1, 1)
 	amount_label.modulate = Color(1, 1, 1, 1)

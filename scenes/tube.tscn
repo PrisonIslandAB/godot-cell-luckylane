@@ -33,6 +33,16 @@ grow_vertical = 0
 mouse_filter = 2
 color = Color(0.25, 0.55, 0.85, 0.75)
 
+[node name="OkZone" type="ColorRect" parent="FillMask"]
+layout_mode = 1
+anchor_top = 0.15
+anchor_right = 1.0
+anchor_bottom = 0.25
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.95, 0.8, 0.3, 0.3)
+
 [node name="TargetLine" type="ColorRect" parent="FillMask"]
 layout_mode = 1
 anchor_top = 0.25
